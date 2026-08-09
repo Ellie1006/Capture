@@ -45,7 +45,7 @@ function initZoom(stream) {
     }
   } catch (_) {}
 
-  zoomRange.value = { min: 1, max: 4, step: 0.1, hardware: false };
+  zoomRange.value = { min: 0.5, max: 4, step: 0.1, hardware: false };
   cameraZoom.value = 1;
 }
 

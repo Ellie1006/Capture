@@ -12,4 +12,4 @@ export const perspectiveMatrix = signal(null);
 export const remoteCaptureRequested = signal(false);
 
 export const cameraZoom = signal(1);
-export const zoomRange = signal({ min: 1, max: 4, step: 0.1, hardware: false });
+export const zoomRange = signal({ min: 0.5, max: 4, step: 0.1, hardware: false });

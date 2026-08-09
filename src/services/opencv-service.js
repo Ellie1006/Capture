@@ -1,37 +1,27 @@
-const OPENCV_URL = 'https://docs.opencv.org/4.10.0/opencv.js';
-
 let cvReady = null;
 
 export function loadOpenCV() {
   if (cvReady) return cvReady;
 
-  cvReady = new Promise((resolve, reject) => {
-    if (window.cv && window.cv.Mat) {
-      resolve(window.cv);
-      return;
-    }
+  cvReady = (async () => {
+    try {
+      const cvModule = await import('@techstark/opencv-js');
+      const cv = cvModule.default || cvModule;
 
-    const script = document.createElement('script');
-    script.src = OPENCV_URL;
-    script.async = true;
+      if (cv.Mat) return cv;
 
-    script.onload = () => {
-      if (window.cv && window.cv.then) {
-        window.cv.then(cv => resolve(cv));
-      } else if (window.cv) {
-        resolve(window.cv);
-      } else {
-        reject(new Error('OpenCV.js loaded but cv not found'));
-      }
-    };
-
-    script.onerror = () => {
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('OpenCV init timeout')), 30000);
+        cv.onRuntimeInitialized = () => {
+          clearTimeout(timeout);
+          resolve(cv);
+        };
+      });
+    } catch (err) {
       cvReady = null;
-      reject(new Error('Failed to load OpenCV.js'));
-    };
-
-    document.head.appendChild(script);
-  });
+      throw err;
+    }
+  })();
 
   return cvReady;
 }
