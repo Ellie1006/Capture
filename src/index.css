@@ -158,6 +158,8 @@ input:focus, textarea:focus, select:focus {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  touch-action: none;
 }
 
 .camera-video {
@@ -216,6 +218,54 @@ input:focus, textarea:focus, select:focus {
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 4px;
+}
+
+/* Zoom Controls */
+.zoom-controls {
+  position: absolute;
+  bottom: 16px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(30, 30, 60, 0.7);
+  backdrop-filter: blur(4px);
+  border-radius: 22px;
+  padding: 3px;
+}
+
+.zoom-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  color: var(--color-text);
+  min-height: unset;
+  min-width: unset;
+}
+
+.zoom-btn:disabled {
+  opacity: 0.3;
+}
+
+.zoom-level {
+  min-width: 44px;
+  height: 36px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  background: transparent;
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-height: unset;
 }
 
 /* Calibration Overlay */
@@ -657,6 +707,93 @@ input:focus, textarea:focus, select:focus {
 .danger-btn:active {
   background: var(--color-error);
   color: #fff;
+}
+
+/* Remote Capture View */
+.remote-capture-view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: var(--color-bg);
+  position: relative;
+}
+
+.remote-capture-exit {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  z-index: 2;
+}
+
+.remote-capture-trigger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  width: 80vmin;
+  height: 80vmin;
+  max-width: 500px;
+  max-height: 500px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 3px solid var(--color-accent);
+  color: var(--color-accent);
+  transition: background 0.2s, border-color 0.2s, transform 0.1s;
+}
+
+.remote-capture-trigger:active:not(:disabled) {
+  transform: scale(0.95);
+  background: var(--color-surface-alt);
+}
+
+.remote-capture-trigger:disabled {
+  opacity: 0.4;
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.remote-capture-trigger.cooldown {
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.remote-capture-label {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Remote Capture FAB */
+.remote-capture-fab {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-shadow: 0 4px 16px rgba(79, 195, 247, 0.3);
+  z-index: 10;
+}
+
+.remote-capture-fab:active {
+  background: var(--color-accent-hover);
 }
 
 /* Responsive: portrait / phone */

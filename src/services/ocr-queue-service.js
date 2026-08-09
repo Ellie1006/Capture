@@ -27,6 +27,8 @@ async function processNext() {
 
   let text = null;
   const engine = preferredOcrEngine.value;
+  let geminiError = null;
+  let tesseractError = null;
 
   if (engine !== 'tesseract' && geminiApiKey.value) {
     const elapsed = Date.now() - lastGeminiCall;
@@ -37,7 +39,9 @@ async function processNext() {
     try {
       text = await transcribeWithGemini(next.imageBase64);
       lastGeminiCall = Date.now();
-    } catch (_) {
+    } catch (err) {
+      geminiError = err;
+      console.error('Gemini OCR failed:', err.message || err);
       text = null;
     }
   }
@@ -45,8 +49,13 @@ async function processNext() {
   if (text === null) {
     try {
       text = await transcribeWithTesseract(next.imageBase64);
-    } catch (_) {
-      text = '[Error: no se pudo transcribir esta captura]';
+    } catch (err) {
+      tesseractError = err;
+      console.error('Tesseract OCR failed:', err.message || err);
+      const details = [];
+      if (geminiError) details.push('Gemini: ' + (geminiError.message || geminiError));
+      if (tesseractError) details.push('Tesseract: ' + (tesseractError.message || tesseractError));
+      text = '[Error OCR] ' + details.join(' | ');
     }
   }
 

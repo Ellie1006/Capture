@@ -1,6 +1,7 @@
 import Peer from 'peerjs';
 import { peerId, roomId, syncRole, connectedPeers, connectionStatus } from '../state/sync.js';
 import { captureBlocks, responseBlocks, blockCounter, addCaptureBlock, addResponseBlock } from '../state/notepad.js';
+import { remoteCaptureRequested } from '../state/camera.js';
 
 let peer = null;
 let connections = new Map();
@@ -83,6 +84,9 @@ function handleHostMessage(msg, fromConn) {
       }
       break;
     }
+    case 'REMOTE_CAPTURE':
+      remoteCaptureRequested.value = true;
+      break;
     case 'PING':
       fromConn.send({ type: 'PONG' });
       break;
