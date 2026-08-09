@@ -42,11 +42,11 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,png,svg,woff2}'],
         runtimeCaching: [
           {
-            urlPattern: /opencv\/opencv\.js$/,
+            urlPattern: /opencv/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'opencv-cache',
-              expiration: { maxEntries: 1, maxAgeSeconds: 30 * 24 * 60 * 60 }
+              expiration: { maxEntries: 2, maxAgeSeconds: 30 * 24 * 60 * 60 }
             }
           },
           {

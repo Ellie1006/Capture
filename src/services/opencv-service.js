@@ -1,29 +1,70 @@
+const OPENCV_URLS = [
+  'https://cdn.jsdelivr.net/npm/@simp1e/opencv-js@0.0.1/dist/opencv.min.js',
+  'https://cdn.jsdelivr.net/npm/@techstark/opencv-js@5.0.0-release.1/dist/opencv.js',
+  'https://docs.opencv.org/4.9.0/opencv.js'
+];
+
 let cvReady = null;
 
 export function loadOpenCV() {
   if (cvReady) return cvReady;
 
-  cvReady = (async () => {
-    try {
-      const cvModule = await import('@techstark/opencv-js');
-      const cv = cvModule.default || cvModule;
-
-      if (cv.Mat) return cv;
-
-      return new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error('OpenCV init timeout')), 30000);
-        cv.onRuntimeInitialized = () => {
-          clearTimeout(timeout);
-          resolve(cv);
-        };
-      });
-    } catch (err) {
-      cvReady = null;
-      throw err;
-    }
-  })();
-
+  cvReady = tryLoadFromUrls(0);
   return cvReady;
+}
+
+function tryLoadFromUrls(index) {
+  if (index >= OPENCV_URLS.length) {
+    cvReady = null;
+    return Promise.reject(new Error('No se pudo cargar OpenCV desde ninguna fuente'));
+  }
+
+  return loadScript(OPENCV_URLS[index]).catch(() => tryLoadFromUrls(index + 1));
+}
+
+function loadScript(url) {
+  return new Promise((resolve, reject) => {
+    if (window.cv && window.cv.Mat) {
+      resolve(window.cv);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = url;
+    script.async = true;
+
+    const timeout = setTimeout(() => {
+      script.remove();
+      reject(new Error('Timeout loading ' + url));
+    }, 30000);
+
+    script.onload = () => {
+      clearTimeout(timeout);
+      if (window.cv && window.cv.then) {
+        window.cv.then(cv => resolve(cv)).catch(reject);
+      } else if (window.cv && window.cv.Mat) {
+        resolve(window.cv);
+      } else if (window.cv) {
+        const check = setInterval(() => {
+          if (window.cv.Mat) {
+            clearInterval(check);
+            resolve(window.cv);
+          }
+        }, 100);
+        setTimeout(() => { clearInterval(check); reject(new Error('OpenCV init timeout')); }, 15000);
+      } else {
+        reject(new Error('OpenCV not found after load'));
+      }
+    };
+
+    script.onerror = () => {
+      clearTimeout(timeout);
+      script.remove();
+      reject(new Error('Failed to load ' + url));
+    };
+
+    document.head.appendChild(script);
+  });
 }
 
 export function refineContour(cv, imageData, roiRect) {
