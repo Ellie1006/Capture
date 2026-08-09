@@ -65,10 +65,15 @@ export function ConnectionStatus() {
                 <div class="join-form">
                   <input
                     type="text"
+                    inputMode="text"
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck={false}
                     placeholder="Room ID"
                     maxLength={6}
                     value={joinInput.value}
-                    onInput={(e) => { joinInput.value = e.target.value.toUpperCase(); }}
+                    onInput={(e) => { joinInput.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, ''); }}
                     onKeyDown={(e) => { if (e.key === 'Enter') handleJoinRoom(); }}
                     style="text-transform: uppercase; text-align: center; font-weight: 700; letter-spacing: 3px;"
                   />

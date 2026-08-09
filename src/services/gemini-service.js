@@ -1,6 +1,6 @@
 import { geminiApiKey } from '../state/settings.js';
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 const TRANSCRIPTION_PROMPT = `Transcribe todo el texto visible en esta imagen exactamente como está escrito.
 El texto está en español. Conserva el formato original, incluyendo saltos de línea y estructura de párrafos.
@@ -31,9 +31,15 @@ export async function transcribeWithGemini(imageDataUrl) {
   });
 
   if (!response.ok) {
-    const status = response.status;
-    if (status === 429) throw new Error('RATE_LIMITED');
-    throw new Error(`GEMINI_ERROR_${status}`);
+    let detail = '';
+    try {
+      const errBody = await response.json();
+      detail = errBody.error?.message || JSON.stringify(errBody);
+    } catch (_) {
+      detail = response.statusText;
+    }
+    console.error('Gemini API error:', response.status, detail);
+    throw new Error(`GEMINI_${response.status}: ${detail}`);
   }
 
   const data = await response.json();

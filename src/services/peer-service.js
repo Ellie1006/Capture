@@ -10,7 +10,7 @@ let reconnectTimer = null;
 let hostRoomId = null;
 
 function generateRoomId() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   let id = '';
   for (let i = 0; i < 6; i++) id += chars[Math.floor(Math.random() * chars.length)];
   return id;
