@@ -8,10 +8,41 @@ export const showSettings = signal(false);
 
 export function SettingsPanel() {
   const [cameras, setCameras] = useState([]);
+  const [verifyStatus, setVerifyStatus] = useState(null);
 
   useEffect(() => {
     listCameras().then(setCameras).catch(() => {});
   }, []);
+
+  async function verifyGeminiKey() {
+    const apiKey = geminiApiKey.value;
+    if (!apiKey) {
+      setVerifyStatus({ ok: false, msg: 'No hay API key ingresada' });
+      return;
+    }
+
+    setVerifyStatus({ ok: null, msg: 'Verificando...' });
+
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setVerifyStatus({ ok: false, msg: `Error ${res.status}: ${body.error?.message || res.statusText}` });
+        return;
+      }
+
+      const data = await res.json();
+      const models = (data.models || []).map(m => m.name.replace('models/', ''));
+      const flashModels = models.filter(n => n.includes('flash'));
+      setVerifyStatus({
+        ok: true,
+        msg: `Key valida. Modelos flash disponibles: ${flashModels.slice(0, 5).join(', ') || 'ninguno'}`
+      });
+    } catch (err) {
+      setVerifyStatus({ ok: false, msg: 'Error de red: ' + err.message });
+    }
+  }
 
   if (!showSettings.value) return null;
 
@@ -33,9 +64,29 @@ export function SettingsPanel() {
           <input
             type="password"
             value={geminiApiKey.value}
-            onInput={(e) => { geminiApiKey.value = e.target.value; }}
+            onInput={(e) => { geminiApiKey.value = e.target.value.trim(); setVerifyStatus(null); }}
             placeholder="AIza..."
           />
+          <div style="margin-top: 6px">
+            <button
+              style="font-size: 12px; padding: 6px 12px; min-height: unset"
+              onClick={verifyGeminiKey}
+              disabled={verifyStatus?.msg === 'Verificando...'}
+            >
+              Verificar key
+            </button>
+          </div>
+          {verifyStatus && (
+            <p class="settings-hint" style={{
+              color: verifyStatus.ok === true ? 'var(--color-success)'
+                : verifyStatus.ok === false ? 'var(--color-error)'
+                : 'var(--color-warning)',
+              marginTop: '6px',
+              wordBreak: 'break-word'
+            }}>
+              {verifyStatus.msg}
+            </p>
+          )}
           <p class="settings-hint">Se guarda localmente en este dispositivo</p>
         </div>
 
