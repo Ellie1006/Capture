@@ -9,6 +9,7 @@ export const showSettings = signal(false);
 export function SettingsPanel() {
   const [cameras, setCameras] = useState([]);
   const [verifyStatus, setVerifyStatus] = useState(null);
+  const [availableModels, setAvailableModels] = useState(null);
 
   useEffect(() => {
     listCameras().then(setCameras).catch(() => {});
@@ -53,6 +54,29 @@ export function SettingsPanel() {
     }
   }
 
+  async function listAvailableModels() {
+    const apiKey = geminiApiKey.value;
+    if (!apiKey) return;
+
+    setAvailableModels({ loading: true });
+
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+      if (!res.ok) {
+        setAvailableModels({ error: `Error ${res.status}` });
+        return;
+      }
+      const data = await res.json();
+      const models = (data.models || [])
+        .map(m => m.name.replace('models/', ''))
+        .filter(n => n.includes('flash') || n.includes('pro'))
+        .sort();
+      setAvailableModels({ models });
+    } catch (err) {
+      setAvailableModels({ error: err.message });
+    }
+  }
+
   if (!showSettings.value) return null;
 
   return (
@@ -76,13 +100,19 @@ export function SettingsPanel() {
             onInput={(e) => { geminiApiKey.value = e.target.value.trim(); setVerifyStatus(null); }}
             placeholder="AIza..."
           />
-          <div style="margin-top: 6px">
+          <div style="display: flex; gap: 6px; margin-top: 6px">
             <button
               style="font-size: 12px; padding: 6px 12px; min-height: unset"
               onClick={verifyGeminiKey}
               disabled={verifyStatus?.msg === 'Verificando...'}
             >
               Verificar key
+            </button>
+            <button
+              style="font-size: 12px; padding: 6px 12px; min-height: unset"
+              onClick={listAvailableModels}
+            >
+              Ver modelos
             </button>
           </div>
           {verifyStatus && (
@@ -96,20 +126,40 @@ export function SettingsPanel() {
               {verifyStatus.msg}
             </p>
           )}
+          {availableModels && (
+            <div class="settings-hint" style={{ marginTop: '6px', wordBreak: 'break-word' }}>
+              {availableModels.loading && 'Cargando modelos...'}
+              {availableModels.error && <span style="color: var(--color-error)">{availableModels.error}</span>}
+              {availableModels.models && (
+                <div>
+                  <strong>Modelos disponibles:</strong>
+                  <div style="max-height: 120px; overflow-y: auto; font-size: 11px; margin-top: 4px">
+                    {availableModels.models.map(m => (
+                      <div
+                        key={m}
+                        style="padding: 2px 0; cursor: pointer; color: var(--color-accent)"
+                        onClick={() => { geminiModel.value = m; setVerifyStatus(null); }}
+                      >
+                        {m} {m === geminiModel.value ? '(actual)' : '← usar'}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           <p class="settings-hint">Se guarda localmente en este dispositivo</p>
         </div>
 
         <div class="settings-section">
           <label class="settings-label">Modelo Gemini</label>
-          <select
+          <input
+            type="text"
             value={geminiModel.value}
-            onChange={(e) => { geminiModel.value = e.target.value; setVerifyStatus(null); }}
-          >
-            <option value="gemini-2.5-flash">gemini-2.5-flash (recomendado)</option>
-            <option value="gemini-2.0-flash">gemini-2.0-flash</option>
-            <option value="gemini-1.5-flash">gemini-1.5-flash</option>
-          </select>
-          <p class="settings-hint">Reintenta automaticamente si hay rate limit</p>
+            onInput={(e) => { geminiModel.value = e.target.value.trim(); setVerifyStatus(null); }}
+            placeholder="gemini-2.5-flash"
+          />
+          <p class="settings-hint">Toca "Ver modelos" para ver cuales estan disponibles</p>
         </div>
 
         <div class="settings-section">
