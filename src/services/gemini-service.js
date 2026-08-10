@@ -50,7 +50,7 @@ export async function transcribeWithGemini(imageDataUrl) {
 
   const data = await response.json();
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error('EMPTY_RESPONSE');
+  if (!text || !text.trim()) throw new Error('EMPTY_RESPONSE');
 
   return text.trim();
 }

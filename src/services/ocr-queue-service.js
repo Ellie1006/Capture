@@ -69,7 +69,9 @@ async function processNext() {
 
   const num = blockCounter.value + 1;
   blockCounter.value = num;
-  const block = { id: crypto.randomUUID(), questionNum: num, text, engine: usedEngine, imagePreview: next.imageBase64, timestamp: Date.now() };
+  const thumbnail = await createThumbnail(next.imageBase64);
+  const finalText = text || '[Sin texto detectado]';
+  const block = { id: crypto.randomUUID(), questionNum: num, text: finalText, engine: usedEngine, imagePreview: thumbnail, timestamp: Date.now() };
   captureBlocks.value = [...captureBlocks.value, block];
 
   if (syncRole.value === 'host') {
@@ -81,6 +83,25 @@ async function processNext() {
 
   const stillPending = ocrQueue.value.some(t => t.status === 'pending');
   if (stillPending) processNext();
+}
+
+function createThumbnail(dataUrl) {
+  return new Promise(resolve => {
+    try {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 160;
+        canvas.height = 120;
+        canvas.getContext('2d').drawImage(img, 0, 0, 160, 120);
+        resolve(canvas.toDataURL('image/jpeg', 0.5));
+      };
+      img.onerror = () => resolve(null);
+      img.src = dataUrl;
+    } catch (_) {
+      resolve(null);
+    }
+  });
 }
 
 function sleep(ms) {
