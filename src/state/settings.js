@@ -1,7 +1,7 @@
 import { signal, effect } from '@preact/signals';
 
 export const geminiApiKey = signal(localStorage.getItem('gemini_api_key') || '');
-export const geminiModel = signal(localStorage.getItem('gemini_model') || 'gemini-2.0-flash');
+export const geminiModel = signal(localStorage.getItem('gemini_model') || 'gemini-2.5-flash');
 export const preferredOcrEngine = signal(localStorage.getItem('ocr_engine') || 'auto');
 export const selectedCameraId = signal(localStorage.getItem('camera_id') || '');
 

@@ -105,11 +105,11 @@ export function SettingsPanel() {
             value={geminiModel.value}
             onChange={(e) => { geminiModel.value = e.target.value; setVerifyStatus(null); }}
           >
-            <option value="gemini-2.0-flash">gemini-2.0-flash (recomendado)</option>
-            <option value="gemini-2.5-flash">gemini-2.5-flash</option>
-            <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite (rapido)</option>
+            <option value="gemini-2.5-flash">gemini-2.5-flash (recomendado)</option>
+            <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+            <option value="gemini-1.5-flash">gemini-1.5-flash</option>
           </select>
-          <p class="settings-hint">gemini-2.0-flash es el mas estable para OCR</p>
+          <p class="settings-hint">Reintenta automaticamente si hay rate limit</p>
         </div>
 
         <div class="settings-section">
