@@ -71,7 +71,8 @@ async function processNext() {
   blockCounter.value = num;
   const thumbnail = await createThumbnail(next.imageBase64);
   const finalText = text || '[Sin texto detectado]';
-  const block = { id: crypto.randomUUID(), questionNum: num, text: finalText, engine: usedEngine, imagePreview: thumbnail, timestamp: Date.now() };
+  const geminiErrorMsg = geminiError ? (geminiError.message || String(geminiError)) : null;
+  const block = { id: crypto.randomUUID(), questionNum: num, text: finalText, engine: usedEngine, geminiError: geminiErrorMsg, imagePreview: thumbnail, timestamp: Date.now() };
   captureBlocks.value = [...captureBlocks.value, block];
 
   if (syncRole.value === 'host') {

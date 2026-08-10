@@ -1,6 +1,6 @@
 import { signal } from '@preact/signals';
 import { useEffect, useState } from 'preact/hooks';
-import { geminiApiKey, preferredOcrEngine, selectedCameraId } from '../state/settings.js';
+import { geminiApiKey, geminiModel, preferredOcrEngine, selectedCameraId } from '../state/settings.js';
 import { listCameras } from '../services/camera-service.js';
 import { clearSession } from '../services/storage-service.js';
 
@@ -22,22 +22,31 @@ export function SettingsPanel() {
     }
 
     setVerifyStatus({ ok: null, msg: 'Verificando...' });
+    const model = geminiModel.value;
 
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
-      const res = await fetch(url);
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: 'Respond with OK' }] }]
+        })
+      });
+
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        setVerifyStatus({ ok: false, msg: `Error ${res.status}: ${body.error?.message || res.statusText}` });
+        setVerifyStatus({
+          ok: false,
+          msg: `Error ${res.status} con ${model}: ${body.error?.message || res.statusText}`
+        });
         return;
       }
 
-      const data = await res.json();
-      const models = (data.models || []).map(m => m.name.replace('models/', ''));
-      const flashModels = models.filter(n => n.includes('flash'));
+      await res.json();
       setVerifyStatus({
         ok: true,
-        msg: `Key valida. Modelos flash disponibles: ${flashModels.slice(0, 5).join(', ') || 'ninguno'}`
+        msg: `Key valida. Modelo ${model} funciona correctamente.`
       });
     } catch (err) {
       setVerifyStatus({ ok: false, msg: 'Error de red: ' + err.message });
@@ -91,6 +100,19 @@ export function SettingsPanel() {
         </div>
 
         <div class="settings-section">
+          <label class="settings-label">Modelo Gemini</label>
+          <select
+            value={geminiModel.value}
+            onChange={(e) => { geminiModel.value = e.target.value; setVerifyStatus(null); }}
+          >
+            <option value="gemini-2.0-flash">gemini-2.0-flash (recomendado)</option>
+            <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+            <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite (rapido)</option>
+          </select>
+          <p class="settings-hint">gemini-2.0-flash es el mas estable para OCR</p>
+        </div>
+
+        <div class="settings-section">
           <label class="settings-label">Motor OCR</label>
           <select
             value={preferredOcrEngine.value}
@@ -104,7 +126,7 @@ export function SettingsPanel() {
 
         {cameras.length > 1 && (
           <div class="settings-section">
-            <label class="settings-label">Cámara</label>
+            <label class="settings-label">Camara</label>
             <select
               value={selectedCameraId.value}
               onChange={(e) => { selectedCameraId.value = e.target.value; }}
@@ -112,7 +134,7 @@ export function SettingsPanel() {
               <option value="">Por defecto (trasera)</option>
               {cameras.map(cam => (
                 <option key={cam.deviceId} value={cam.deviceId}>
-                  {cam.label || `Cámara ${cam.deviceId.slice(0, 8)}`}
+                  {cam.label || `Camara ${cam.deviceId.slice(0, 8)}`}
                 </option>
               ))}
             </select>
@@ -124,12 +146,12 @@ export function SettingsPanel() {
           <button
             class="danger-btn"
             onClick={async () => {
-              if (confirm('¿Borrar todos los bloques de la sesión actual?')) {
+              if (confirm('Borrar todos los bloques de la sesion actual?')) {
                 await clearSession();
               }
             }}
           >
-            Limpiar sesión
+            Limpiar sesion
           </button>
         </div>
       </div>

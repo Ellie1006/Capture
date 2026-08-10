@@ -1,6 +1,6 @@
-import { geminiApiKey } from '../state/settings.js';
+import { geminiApiKey, geminiModel } from '../state/settings.js';
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
 
 const TRANSCRIPTION_PROMPT = `Eres un sistema OCR. Tu única tarea es transcribir el texto visible en esta imagen.
 
@@ -30,7 +30,8 @@ export async function transcribeWithGemini(imageDataUrl) {
     }]
   };
 
-  const response = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
+  const url = `${API_BASE}${geminiModel.value}:generateContent`;
+  const response = await fetch(`${url}?key=${apiKey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)

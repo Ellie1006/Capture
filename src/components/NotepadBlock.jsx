@@ -2,6 +2,7 @@ import { useState } from 'preact/hooks';
 
 export function NotepadBlock({ block, showSeparator }) {
   const [showImage, setShowImage] = useState(false);
+  const [showError, setShowError] = useState(false);
 
   return (
     <div class="notepad-block">
@@ -10,6 +11,11 @@ export function NotepadBlock({ block, showSeparator }) {
         Pregunta {block.questionNum}
         {block.engine && <span class={`engine-tag engine-${block.engine}`}>{block.engine}</span>}
       </h3>
+      {block.geminiError && block.engine === 'tesseract' && (
+        <div class="gemini-error-detail" onClick={() => setShowError(!showError)}>
+          {showError ? block.geminiError : 'Gemini falló — toca para ver'}
+        </div>
+      )}
       {block.imagePreview && (
         <img
           src={block.imagePreview}

@@ -424,6 +424,19 @@ input:focus, textarea:focus, select:focus {
   color: var(--color-error);
 }
 
+.gemini-error-detail {
+  font-size: 11px;
+  color: var(--color-warning);
+  background: rgba(255, 167, 38, 0.08);
+  border: 1px solid rgba(255, 167, 38, 0.2);
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
 .block-thumbnail {
   width: 80px;
   height: 60px;
