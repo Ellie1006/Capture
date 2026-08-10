@@ -1,6 +1,6 @@
 import { geminiApiKey } from '../state/settings.js';
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
 const TRANSCRIPTION_PROMPT = `Transcribe todo el texto visible en esta imagen exactamente como está escrito.
 El texto está en español. Conserva el formato original, incluyendo saltos de línea y estructura de párrafos.

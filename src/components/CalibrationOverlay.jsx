@@ -143,7 +143,7 @@ export function CalibrationOverlay({ videoEl, onClose }) {
 
       const xs = corners.map(c => c.x);
       const ys = corners.map(c => c.y);
-      const margin = 20;
+      const margin = 60;
       const roiRect = {
         x: Math.max(0, Math.floor(Math.min(...xs) - margin)),
         y: Math.max(0, Math.floor(Math.min(...ys) - margin)),

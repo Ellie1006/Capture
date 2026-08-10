@@ -72,16 +72,24 @@ export function refineContour(cv, imageData, roiRect) {
   const gray = new cv.Mat();
   const blurred = new cv.Mat();
   const edges = new cv.Mat();
+  const dilated = new cv.Mat();
 
   cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
   cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0);
-  cv.Canny(blurred, edges, 50, 150);
+  cv.Canny(blurred, edges, 30, 100);
 
-  const roi = edges.roi(new cv.Rect(roiRect.x, roiRect.y, roiRect.w, roiRect.h));
+  const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
+  cv.dilate(edges, dilated, kernel);
+  kernel.delete();
+
+  const roi = dilated.roi(new cv.Rect(roiRect.x, roiRect.y, roiRect.w, roiRect.h));
 
   const contours = new cv.MatVector();
   const hierarchy = new cv.Mat();
   cv.findContours(roi, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+  const roiArea = roiRect.w * roiRect.h;
+  const minArea = roiArea * 0.15;
 
   let bestContour = null;
   let maxArea = 0;
@@ -89,10 +97,10 @@ export function refineContour(cv, imageData, roiRect) {
   for (let i = 0; i < contours.size(); i++) {
     const contour = contours.get(i);
     const area = cv.contourArea(contour);
-    if (area > maxArea) {
+    if (area > maxArea && area >= minArea) {
       const peri = cv.arcLength(contour, true);
       const approx = new cv.Mat();
-      cv.approxPolyDP(contour, approx, 0.02 * peri, true);
+      cv.approxPolyDP(contour, approx, 0.04 * peri, true);
 
       if (approx.rows === 4) {
         maxArea = area;
@@ -118,7 +126,7 @@ export function refineContour(cv, imageData, roiRect) {
   }
 
   src.delete(); gray.delete(); blurred.delete(); edges.delete();
-  roi.delete(); contours.delete(); hierarchy.delete();
+  dilated.delete(); roi.delete(); contours.delete(); hierarchy.delete();
 
   return corners;
 }
