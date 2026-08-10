@@ -2,11 +2,17 @@ import { geminiApiKey } from '../state/settings.js';
 
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
-const TRANSCRIPTION_PROMPT = `Transcribe todo el texto visible en esta imagen exactamente como está escrito.
-El texto está en español. Conserva el formato original, incluyendo saltos de línea y estructura de párrafos.
-Para fórmulas matemáticas, usa notación LaTeX: $ para inline y $$ para display.
-Si la imagen contiene diagramas o elementos no textuales, descríbelos brevemente en [corchetes].
-Devuelve solo la transcripción, sin comentarios adicionales.`;
+const TRANSCRIPTION_PROMPT = `Eres un sistema OCR. Tu única tarea es transcribir el texto visible en esta imagen.
+
+Reglas:
+1. Transcribe EXACTAMENTE lo que ves, carácter por carácter, sin interpretar ni corregir.
+2. Mantén saltos de línea y estructura original.
+3. Para fórmulas matemáticas usa LaTeX: $ inline, $$ display.
+4. Si hay diagramas, descríbelos en [corchetes].
+5. NO agregues comentarios, explicaciones, ni texto que no esté en la imagen.
+6. El texto puede estar en español.
+
+Responde SOLO con la transcripción.`;
 
 export async function transcribeWithGemini(imageDataUrl) {
   const apiKey = geminiApiKey.value;

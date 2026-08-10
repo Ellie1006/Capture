@@ -26,6 +26,7 @@ async function processNext() {
   );
 
   let text = null;
+  let usedEngine = null;
   const engine = preferredOcrEngine.value;
   let geminiError = null;
   let tesseractError = null;
@@ -38,6 +39,7 @@ async function processNext() {
 
     try {
       text = await transcribeWithGemini(next.imageBase64);
+      usedEngine = 'gemini';
       lastGeminiCall = Date.now();
     } catch (err) {
       geminiError = err;
@@ -49,9 +51,11 @@ async function processNext() {
   if (text === null) {
     try {
       text = await transcribeWithTesseract(next.imageBase64);
+      usedEngine = 'tesseract';
     } catch (err) {
       tesseractError = err;
       console.error('Tesseract OCR failed:', err.message || err);
+      usedEngine = 'error';
       const details = [];
       if (geminiError) details.push('Gemini: ' + (geminiError.message || geminiError));
       if (tesseractError) details.push('Tesseract: ' + (tesseractError.message || tesseractError));
@@ -65,7 +69,7 @@ async function processNext() {
 
   const num = blockCounter.value + 1;
   blockCounter.value = num;
-  const block = { id: crypto.randomUUID(), questionNum: num, text, timestamp: Date.now() };
+  const block = { id: crypto.randomUUID(), questionNum: num, text, engine: usedEngine, imagePreview: next.imageBase64, timestamp: Date.now() };
   captureBlocks.value = [...captureBlocks.value, block];
 
   if (syncRole.value === 'host') {
